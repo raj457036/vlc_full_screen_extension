@@ -54,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
         return VlcPlayer(
           controller: playerController,
           aspectRatio: aspectRatio,
+          placeholder: const Center(child: CircularProgressIndicator()),
         );
       },
     );
