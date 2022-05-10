@@ -95,13 +95,11 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
 
   @override
   void dispose() {
-    super.dispose();
     playerController.stopRendererScanning();
     playerController.dispose();
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
-      reset();
-      widget.controller.exitFullScreen();
-    });
+    reset();
+    widget.controller.exitFullScreen();
+    super.dispose();
   }
 
   @override
