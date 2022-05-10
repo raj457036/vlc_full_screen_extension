@@ -83,7 +83,7 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
     }
   }
 
-  Future<void> reset() async {
+  void reset() {
     final prevController = widget.controller.primary;
     prevController.setTime(
       playerController.value.position.inMilliseconds,
@@ -94,13 +94,13 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
   }
 
   @override
-  Future<void> dispose() async {
+  void dispose() {
     super.dispose();
+    playerController.stopRendererScanning();
+    playerController.dispose();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
       reset();
       widget.controller.exitFullScreen();
-      await playerController.stopRendererScanning();
-      await playerController.dispose();
     });
   }
 
