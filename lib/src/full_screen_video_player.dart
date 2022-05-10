@@ -62,12 +62,9 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
         options: prevController.options,
       );
     }
-
+    prevController.pause();
     playerController
       ..addOnInitListener(() async {
-        if (mounted) {
-          prevController.pause();
-        }
         widget.controller.onInit?.call(playerController);
       })
       ..addListener(_playerListener);
