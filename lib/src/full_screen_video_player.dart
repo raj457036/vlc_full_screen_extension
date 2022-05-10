@@ -32,18 +32,18 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
   void createController() {
     final prevController = widget.controller.primary;
 
-    if (prevController.dataSourceType == DataSourceType.network) {
+    if (widget.controller.dataSourceType == DataSourceType.network) {
       playerController = VlcPlayerController.network(
-        prevController.dataSource,
+        widget.controller.dataSource,
         hwAcc: prevController.hwAcc,
         autoPlay: prevController.value.isPlaying,
         options: prevController.options,
       );
     }
 
-    if (prevController.dataSourceType == DataSourceType.file) {
-      final path = RegExp('file:///(.*)')
-          .firstMatch(prevController.dataSource)
+    if (widget.controller.dataSourceType == DataSourceType.file) {
+      final path = RegExp('file://(.*)')
+          .firstMatch(widget.controller.dataSource)
           ?.group(1);
 
       playerController = VlcPlayerController.file(
@@ -54,9 +54,9 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
       );
     }
 
-    if (prevController.dataSourceType == DataSourceType.asset) {
+    if (widget.controller.dataSourceType == DataSourceType.asset) {
       playerController = VlcPlayerController.asset(
-        prevController.dataSource,
+        widget.controller.dataSource,
         hwAcc: prevController.hwAcc,
         autoPlay: prevController.value.isPlaying,
         options: prevController.options,
@@ -96,7 +96,6 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
   @override
   Future<void> dispose() async {
     super.dispose();
-
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) async {
       reset();
       widget.controller.exitFullScreen();

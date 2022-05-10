@@ -5,7 +5,10 @@ class FullScreenController with ChangeNotifier {
     required this.primary,
     required this.builder,
     this.onInit,
-  });
+  }) {
+    dataSource = primary.dataSource;
+    dataSourceType = primary.dataSourceType;
+  }
 
   final VlcPlayerController primary;
 
@@ -16,6 +19,15 @@ class FullScreenController with ChangeNotifier {
   ) builder;
 
   final void Function(VlcPlayerController controller)? onInit;
+
+  late String dataSource;
+  late DataSourceType dataSourceType;
+
+  void setDataSource(String dataSource, DataSourceType dataSourceType) {
+    this.dataSource = dataSource;
+    this.dataSourceType = dataSourceType;
+    notifyListeners();
+  }
 
   bool _fullScreen = false;
 
