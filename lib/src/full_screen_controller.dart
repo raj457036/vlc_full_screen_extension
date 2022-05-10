@@ -49,7 +49,7 @@ class FullScreenController with ChangeNotifier {
       ]),
     ]);
     if (context != null) {
-      Navigator.of(context).pop();
+      Future.delayed(Duration.zero, () => Navigator.of(context).pop());
     }
     _fullScreen = false;
 
@@ -75,11 +75,11 @@ class FullScreenController with ChangeNotifier {
         );
       },
     );
-    Navigator.of(context).push(route);
     await Future.wait([
       _setOrientationForVideo(),
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky),
     ]);
+    Future.delayed(Duration.zero, () => Navigator.push(context, route));
 
     _fullScreen = true;
 
