@@ -36,6 +36,8 @@ class FullScreenController with ChangeNotifier {
 
   /// exit full screen mode
   Future<void> exitFullScreen([BuildContext? context]) async {
+    if (!_fullScreen) return;
+
     await Future.wait([
       SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
@@ -56,6 +58,7 @@ class FullScreenController with ChangeNotifier {
 
   /// enter full screen mode
   Future<void> enterFullScreen(BuildContext context) async {
+    if (_fullScreen) return;
     final TransitionRoute<void> route = PageRouteBuilder<void>(
       pageBuilder: (context, animation, secondaryAnimation) {
         return AnimatedBuilder(
