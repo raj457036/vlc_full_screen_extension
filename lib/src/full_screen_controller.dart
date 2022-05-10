@@ -52,7 +52,6 @@ class FullScreenController with ChangeNotifier {
       Future.delayed(Duration.zero, () => Navigator.of(context).pop());
     }
     _fullScreen = false;
-
     notifyListeners();
   }
 
