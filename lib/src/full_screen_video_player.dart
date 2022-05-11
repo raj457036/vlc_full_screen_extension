@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -10,8 +11,10 @@ class FullScreenVideoPlayer extends StatefulWidget {
   const FullScreenVideoPlayer({
     Key? key,
     required this.controller,
+    required this.play,
   }) : super(key: key);
 
+  final bool play;
   final FullScreenController controller;
 
   @override
@@ -21,6 +24,7 @@ class FullScreenVideoPlayer extends StatefulWidget {
 class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
   late final VlcPlayerController playerController;
 
+  bool active = false;
   bool initialized = false;
 
   @override
@@ -29,14 +33,14 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
     super.initState();
   }
 
-  void createController() {
+  Future<void> createController() async {
     final prevController = widget.controller.primary;
-
+    log("IS PAUSED: ${await prevController.isPlaying()}");
     if (widget.controller.dataSourceType == DataSourceType.network) {
       playerController = VlcPlayerController.network(
         widget.controller.dataSource,
         hwAcc: prevController.hwAcc,
-        autoPlay: prevController.value.isPlaying,
+        autoPlay: widget.play,
         options: prevController.options,
       );
     }
@@ -49,7 +53,7 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
       playerController = VlcPlayerController.file(
         File(path!),
         hwAcc: prevController.hwAcc,
-        autoPlay: prevController.value.isPlaying,
+        autoPlay: widget.play,
         options: prevController.options,
       );
     }
@@ -58,16 +62,20 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
       playerController = VlcPlayerController.asset(
         widget.controller.dataSource,
         hwAcc: prevController.hwAcc,
-        autoPlay: prevController.value.isPlaying,
+        autoPlay: widget.play,
         options: prevController.options,
       );
     }
-    prevController.pause();
+
     playerController
       ..addOnInitListener(() async {
         widget.controller.onInit?.call(playerController);
       })
       ..addListener(_playerListener);
+
+    setState(() {
+      active = true;
+    });
   }
 
   Future<void> _playerListener() async {
@@ -83,27 +91,28 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer> {
     }
   }
 
-  void reset() {
+  Future<void> reset() async {
     final prevController = widget.controller.primary;
-    prevController.setTime(
+    await prevController.setTime(
       playerController.value.position.inMilliseconds,
     );
     if (playerController.value.isPlaying) {
-      prevController.play();
+      Future.delayed(const Duration(milliseconds: 200), prevController.play);
     }
+    await widget.controller.exitFullScreen();
+    await playerController.stopRendererScanning();
+    await playerController.dispose();
   }
 
   @override
   void dispose() {
-    widget.controller.exitFullScreen();
     reset();
-    playerController.stopRendererScanning();
-    playerController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!active) return const SizedBox.shrink();
     return widget.controller.builder(
       context,
       playerController,

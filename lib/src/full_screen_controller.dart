@@ -48,40 +48,21 @@ class FullScreenController with ChangeNotifier {
         DeviceOrientation.portraitDown,
       ]),
     ]);
-    if (context != null) {
-      Future.delayed(Duration.zero, () => Navigator.of(context).pop());
-    }
+
     _fullScreen = false;
     notifyListeners();
   }
 
   /// enter full screen mode
-  Future<void> enterFullScreen(BuildContext context) async {
+  Future<void> enterFullScreen([BuildContext? context]) async {
     if (_fullScreen) return;
-    final TransitionRoute<void> route = PageRouteBuilder<void>(
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return AnimatedBuilder(
-          animation: CurvedAnimation(
-            curve: Curves.ease,
-            parent: animation,
-            reverseCurve: Curves.ease,
-          ),
-          builder: (BuildContext context, Widget? child) {
-            return FullScreenVideoPlayer(
-              controller: this,
-            );
-          },
-        );
-      },
-    );
+
     await Future.wait([
       _setOrientationForVideo(),
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky),
     ]);
-    Future.delayed(Duration.zero, () => Navigator.push(context, route));
 
     _fullScreen = true;
-
     notifyListeners();
   }
 

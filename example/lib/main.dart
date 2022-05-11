@@ -33,6 +33,9 @@ class _MyHomePageState extends State<MyHomePage> {
   late final VlcPlayerController videoPlayerController;
   late final FullScreenController fullScreenController;
 
+  bool fullScreen = false;
+  bool reInit = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,9 +44,19 @@ class _MyHomePageState extends State<MyHomePage> {
       'https://media.w3.org/2010/05/sintel/trailer.mp4',
       hwAcc: HwAcc.full,
       autoPlay: true,
+      autoInitialize: false,
       options: VlcPlayerOptions(),
-    )..addOnInitListener(() {
+    )
+      ..addOnInitListener(() {
         videoPlayerController.setLooping(true);
+      })
+      ..addListener(() async {
+        if (!videoPlayerController.value.isInitialized) return;
+        if (reInit && videoPlayerController.value.isPlaying) {
+          videoPlayerController
+              .setTime(videoPlayerController.value.duration.inMilliseconds);
+          reInit = false;
+        }
       });
 
     fullScreenController = FullScreenController(
@@ -51,13 +64,18 @@ class _MyHomePageState extends State<MyHomePage> {
       builder: (context, playerController, fullScreenController) {
         final aspectRatio = MediaQuery.of(context).size.aspectRatio;
 
-        return VlcPlayer(
+        return CustomVlcPlayer(
+          key: UniqueKey(),
           controller: playerController,
           aspectRatio: aspectRatio,
           placeholder: const Center(child: CircularProgressIndicator()),
         );
       },
-    );
+    )..addListener(() {
+        setState(() {
+          fullScreen = fullScreenController.isFullScreen;
+        });
+      });
   }
 
   @override
@@ -70,21 +88,38 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: VlcPlayer(
-          controller: videoPlayerController,
-          aspectRatio: 16 / 9,
-          placeholder: const Center(child: CircularProgressIndicator()),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          fullScreenController.enterFullScreen(context);
-        },
-        child: const Icon(Icons.fullscreen),
-      ),
+    final player = CustomVlcPlayer(
+      key: const ValueKey("fullScreen"),
+      controller: videoPlayerController,
+      aspectRatio: 16 / 9,
+      placeholder: const Center(child: CircularProgressIndicator()),
     );
+
+    return WillPopScope(child: Builder(builder: (context) {
+      if (fullScreen) {
+        return player;
+      }
+
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: player,
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            fullScreenController.enterFullScreen();
+            reInit = true;
+          },
+          child: const Icon(Icons.fullscreen),
+        ),
+      );
+    }), onWillPop: () async {
+      if (fullScreen) {
+        fullScreenController.exitFullScreen();
+        reInit = true;
+      }
+
+      return false;
+    });
   }
 }
